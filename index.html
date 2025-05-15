@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8" />
+  <title>پنل مدیریت فروشگاه</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body style="font-family: sans-serif; direction: rtl; padding: 20px;">
+  <h1>ورود / ثبت نام</h1>
+  <div>
+    <input type="text" id="username" placeholder="نام کاربری"><br>
+    <input type="password" id="password" placeholder="رمز عبور"><br>
+    <button onclick="register()">ثبت نام</button>
+    <button onclick="login()">ورود</button>
+  </div>
+
+  <h2>افزودن محصول</h2>
+  <form id="productForm">
+    <input type="text" name="name" placeholder="نام محصول"><br>
+    <input type="number" name="price" placeholder="قیمت"><br>
+    <textarea name="description" placeholder="توضیحات"></textarea><br>
+    <input type="file" name="image"><br>
+    <button type="submit">افزودن</button>
+  </form>
+
+  <h2>محصولات</h2>
+  <div id="products"></div>
+
+  <script>
+    const productForm = document.getElementById('productForm');
+
+    function register() {
+      fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: document.getElementById('username').value,
+          password: document.getElementById('password').value
+        })
+      }).then(res => res.text()).then(alert);
+    }
+
+    function login() {
+      fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: document.getElementById('username').value,
+          password: document.getElementById('password').value
+        })
+      }).then(res => res.text()).then(alert);
+    }
+
+    productForm.onsubmit = e => {
+      e.preventDefault();
+      const formData = new FormData(productForm);
+      fetch('/api/products', {
+        method: 'POST',
+        body: formData
+      }).then(res => res.ok && loadProducts());
+    };
+
+    function loadProducts() {
+      fetch('/api/products').then(res => res.json()).then(data => {
+        const div = document.getElementById('products');
+        div.innerHTML = '';
+        data.forEach(p => {
+          const item = document.createElement('div');
+          item.innerHTML = `<h3>${p.name}</h3><p>${p.price} تومان</p><p>${p.description}</p><img src="${p.image}" width="100">`;
+          div.appendChild(item);
+        });
+      });
+    }
+
+    loadProducts();
+  </script>
+</body>
+</html>
